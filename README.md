@@ -23,6 +23,10 @@
 - Data stays in-state: documents, vectors, prompts, and generated answers stay on infrastructure operated by or for the agency.
 - Procurement-ready framing: see [Security](docs/SECURITY.md), [Deployment](docs/DEPLOY_STATE.md), [Architecture](docs/ARCHITECTURE.md), and [Hardware Setup](docs/HARDWARESETUP.md).
 
+## Featured In
+
+- Medium: [The Problem With Most AI Demos and Why I Built a Public-Sector RAG Starter Instead](https://medium.com/@nprasann/the-problem-with-most-ai-demos-and-why-i-built-a-public-sector-rag-starter-instead-95be0db949af)
+
 ## Implemented Features
 
 - Core project scaffolding and Docker-based service configuration for local and pilot deployments
