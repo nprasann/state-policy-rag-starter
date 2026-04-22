@@ -21,7 +21,7 @@
 
 - Cost target: less than `$15K` for a starter deployment on a single state-managed VM plus implementation time.
 - Data stays in-state: documents, vectors, prompts, and generated answers stay on infrastructure operated by or for the agency.
-- Procurement-ready framing: see [SECURITY.md](/Volumes/HappyFam/state-policy-rag-starter/docs/SECURITY.md) and [DEPLOY_STATE.md](/Volumes/HappyFam/state-policy-rag-starter/docs/DEPLOY_STATE.md).
+- Procurement-ready framing: see [Security](docs/SECURITY.md), [Deployment](docs/DEPLOY_STATE.md), [Architecture](docs/ARCHITECTURE.md), and [Hardware Setup](docs/HARDWARESETUP.md).
 
 ## 5-Minute Quickstart
 
@@ -77,10 +77,19 @@ flowchart LR
 
 ## Repo Map
 
-- [README.md](/Volumes/HappyFam/state-policy-rag-starter/README.md): project overview and quickstart
-- [GOVERNANCE.md](/Volumes/HappyFam/state-policy-rag-starter/GOVERNANCE.md): usage, privacy, citation, and audit requirements
-- [SECURITY.md](/Volumes/HappyFam/state-policy-rag-starter/docs/SECURITY.md): threat model and technical controls
-- [DEPLOY_STATE.md](/Volumes/HappyFam/state-policy-rag-starter/docs/DEPLOY_STATE.md): step-by-step single-VM deployment guide
+- [README.md](README.md): project overview and quickstart
+- [GOVERNANCE.md](GOVERNANCE.md): usage, privacy, citation, and audit requirements
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): runtime topology, diagrams, trust boundaries, and request flows
+- [docs/HARDWARESETUP.md](docs/HARDWARESETUP.md): hardware sizing and isolated network guidance for Azure or on-prem
+- [docs/SECURITY.md](docs/SECURITY.md): threat model and technical controls
+- [docs/DEPLOY_STATE.md](docs/DEPLOY_STATE.md): step-by-step single-VM deployment guide
+
+## Deployment Planning Docs
+
+- [Architecture Guide](docs/ARCHITECTURE.md) for deployment, sequence, class, and state diagrams
+- [Hardware Setup Guide](docs/HARDWARESETUP.md) for VM sizing, storage, and network isolation recommendations
+- [Security Guide](docs/SECURITY.md) for threat model and mitigations
+- [State Deployment Guide](docs/DEPLOY_STATE.md) for pilot rollout steps
 
 ## Intended Outcome
 
