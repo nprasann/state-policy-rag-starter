@@ -1,5 +1,12 @@
 # state-policy-rag-starter
 
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![Status](https://img.shields.io/badge/status-starter-success)
+![MCP](https://img.shields.io/badge/MCP-server-purple)
+![RAG](https://img.shields.io/badge/AI-RAG-orange)
+![Ollama](https://img.shields.io/badge/LLM-Ollama-black)
+![Vector%20DB](https://img.shields.io/badge/vector%20db-Chroma-3f51b5)
+
 `state-policy-rag-starter` is a starter repository for a retrieval-augmented generation workflow that helps state agencies answer policy questions using approved policy text and tightly scoped case data access.
 
 ## What It Does
