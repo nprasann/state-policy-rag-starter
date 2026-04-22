@@ -94,7 +94,7 @@ python3 ingest/ingest.py \
 curl -X POST http://localhost:8080/search_policies \
   -H "Content-Type: application/json" \
   -H "user: test.user@state.gov" \
-  -d '{"query":"What does the policy require DCYF to display on the website home page?"}'
+  -d '{"query":"What does the policy require the State Agency to display on the website home page?"}'
 ```
 
 7. Test the RAG endpoint.
