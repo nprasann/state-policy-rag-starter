@@ -46,3 +46,8 @@ htmlcov/
 # Local data directories
 chroma_data/
 ollama/
+
+# Local environment and test documents
+.env
+examples/sample_policy.pdf
+examples/sample_policy1.pdf
