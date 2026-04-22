@@ -90,6 +90,7 @@ flowchart LR
 - [docs/HARDWARESETUP.md](docs/HARDWARESETUP.md): hardware sizing and isolated network guidance for Azure or on-prem
 - [docs/SECURITY.md](docs/SECURITY.md): threat model and technical controls
 - [docs/DEPLOY_STATE.md](docs/DEPLOY_STATE.md): step-by-step single-VM deployment guide
+- [docs/AUTOMATED_INGESTION.md](docs/AUTOMATED_INGESTION.md): ETL design for scheduled policy refresh and vector synchronization
 
 ## Deployment Planning Docs
 
@@ -97,6 +98,7 @@ flowchart LR
 - [Hardware Setup Guide](docs/HARDWARESETUP.md) for VM sizing, storage, and network isolation recommendations
 - [Security Guide](docs/SECURITY.md) for threat model and mitigations
 - [State Deployment Guide](docs/DEPLOY_STATE.md) for pilot rollout steps
+- [Automated Ingestion Guide](docs/AUTOMATED_INGESTION.md) for the planned scheduled refresh pipeline
 
 ## Future Roadmap
 
