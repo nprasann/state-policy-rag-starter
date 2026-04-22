@@ -23,6 +23,13 @@
 - Data stays in-state: documents, vectors, prompts, and generated answers stay on infrastructure operated by or for the agency.
 - Procurement-ready framing: see [Security](docs/SECURITY.md), [Deployment](docs/DEPLOY_STATE.md), [Architecture](docs/ARCHITECTURE.md), and [Hardware Setup](docs/HARDWARESETUP.md).
 
+## Implemented Features
+
+- Core project scaffolding and Docker-based service configuration for local and pilot deployments
+- RAG service implementation with strict temperature control and citation enforcement
+- MCP server integration supporting policy search, SQL whitelisting, and audit logging
+- Dedicated ingestion pipeline for extracting, chunking, embedding, and indexing policy documents
+
 ## 5-Minute Quickstart
 
 1. Clone the repository and enter it.
@@ -90,6 +97,13 @@ flowchart LR
 - [Hardware Setup Guide](docs/HARDWARESETUP.md) for VM sizing, storage, and network isolation recommendations
 - [Security Guide](docs/SECURITY.md) for threat model and mitigations
 - [State Deployment Guide](docs/DEPLOY_STATE.md) for pilot rollout steps
+
+## Future Roadmap
+
+- Advanced Semantic Search: improve retrieval precision with re-ranking models layered on top of vector search
+- Automated Data Refresh: move from manual ingestion to a scheduled and repeatable pipeline
+- Expanded Policy Coverage: support additional policy formats such as HTML and DOCX alongside PDF
+- Enhanced UI/UX: develop a dedicated frontend for policy exploration and guided question workflows
 
 ## Open Source And Feedback
 
