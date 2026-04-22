@@ -1,1 +1,6 @@
-# Placeholder for MCP server Python dependencies.
+fastapi
+uvicorn
+chromadb
+python-dotenv
+sentence-transformers
+torch

@@ -6,11 +6,14 @@ from typing import Any
 import chromadb
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
 
 import audit
 from auth import get_user
 
 ALLOWED_PROCS = ["sp_GetCaseSummary"]
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+_embedding_model: SentenceTransformer | None = None
 
 app = FastAPI(title="mcp_server")
 
@@ -33,6 +36,14 @@ def get_chroma_collection():
     return client.get_collection("policies")
 
 
+def get_embedding_model() -> SentenceTransformer:
+    """Load the shared embedding model lazily for semantic search."""
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = SentenceTransformer(EMBEDDING_MODEL)
+    return _embedding_model
+
+
 @app.post("/search_policies")
 def search_policies(
     payload: SearchPoliciesRequest,
@@ -43,7 +54,9 @@ def search_policies(
 
     try:
         collection = get_chroma_collection()
-        results = collection.query(query_texts=[payload.query], n_results=5)
+        embedding_model = get_embedding_model()
+        query_embedding = embedding_model.encode([payload.query]).tolist()
+        results = collection.query(query_embeddings=query_embedding, n_results=5)
         documents = results.get("documents", [[]])
         metadatas = results.get("metadatas", [[]])
 
@@ -56,8 +69,13 @@ def search_policies(
                     "section": str(metadata.get("section", "")),
                 }
             )
-    except Exception:
-        chunks = []
+    except Exception as exc:
+        audit.log(
+            resolved_user,
+            "search_policies_error",
+            {"query": payload.query, "error": str(exc)},
+        )
+        raise HTTPException(status_code=500, detail="Policy search failed") from exc
 
     response = {"chunks": chunks}
     audit.log(

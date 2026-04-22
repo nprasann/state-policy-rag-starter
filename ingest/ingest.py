@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 
 from chunking import split_text
 
-EMBED_MODEL = "BAAI/bge-m3"
+EMBED_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 
 
 def extract_pdf_text(file_path: str) -> str:
