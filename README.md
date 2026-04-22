@@ -52,6 +52,11 @@ For higher-quality production retrieval, the repository also supports larger emb
 
 ## 5-Minute Quickstart
 
+macOS is the directly tested local path for this repository. Windows and Linux quickstart instructions below are AI-assisted guidance and should be validated in your environment before production use.
+
+<details open>
+<summary><strong>Mac</strong></summary>
+
 1. Clone the repository and enter it.
 
 ```bash
@@ -105,6 +110,126 @@ curl -X POST http://localhost:8081/ask \
   -H "user: test.user@state.gov" \
   -d '{"query":"What does policy say about termination of rights?"}'
 ```
+
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+These steps are AI-assisted guidance. Validate locally before wider rollout.
+
+1. Clone the repository and enter it in PowerShell.
+
+```powershell
+git clone <your-fork-or-repo-url>
+cd state-policy-rag-starter
+```
+
+2. Create a local environment file.
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Add a Hugging Face read token to `.env` if model downloads are needed.
+
+```powershell
+Add-Content .env 'HF_TOKEN=your_huggingface_read_token'
+```
+
+4. Start the stack.
+
+```powershell
+docker-compose up --build
+```
+
+5. Create a virtual environment, install ingest dependencies, and ingest a policy PDF.
+
+```powershell
+py -3 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r ingest/requirements.txt
+$env:CHROMA_PORT='8001'
+$env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
+python ingest/ingest.py --file examples/sample_policy.pdf --source_name "Sample Policy" --section "General"
+```
+
+6. Test semantic search.
+
+```powershell
+curl.exe -X POST http://localhost:8080/search_policies -H "Content-Type: application/json" -H "user: test.user@state.gov" -d "{\"query\":\"What does the policy require the State Agency to display on the website home page?\"}"
+```
+
+7. Test the RAG endpoint.
+
+```powershell
+curl.exe -X POST http://localhost:8081/ask -H "Content-Type: application/json" -H "user: test.user@state.gov" -d "{\"query\":\"What does policy say about termination of rights?\"}"
+```
+
+</details>
+
+<details>
+<summary><strong>Linux</strong></summary>
+
+These steps are AI-assisted guidance. Validate locally before wider rollout.
+
+1. Clone the repository and enter it.
+
+```bash
+git clone <your-fork-or-repo-url>
+cd state-policy-rag-starter
+```
+
+2. Create a local environment file.
+
+```bash
+cp .env.example .env
+```
+
+3. Add a Hugging Face read token to `.env` if model downloads are needed.
+
+```bash
+echo 'HF_TOKEN=your_huggingface_read_token' >> .env
+```
+
+4. Start the stack.
+
+```bash
+docker-compose up --build
+```
+
+5. Create a virtual environment, install ingest dependencies, and ingest a policy PDF.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r ingest/requirements.txt
+CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+python3 ingest/ingest.py \
+  --file examples/sample_policy.pdf \
+  --source_name "Sample Policy" \
+  --section "General"
+```
+
+6. Test semantic search.
+
+```bash
+curl -X POST http://localhost:8080/search_policies \
+  -H "Content-Type: application/json" \
+  -H "user: test.user@state.gov" \
+  -d '{"query":"What does the policy require the State Agency to display on the website home page?"}'
+```
+
+7. Test the RAG endpoint.
+
+```bash
+curl -X POST http://localhost:8081/ask \
+  -H "Content-Type: application/json" \
+  -H "user: test.user@state.gov" \
+  -d '{"query":"What does policy say about termination of rights?"}'
+```
+
+</details>
 
 ## Architecture
 
