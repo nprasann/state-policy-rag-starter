@@ -30,6 +30,26 @@
 - MCP server integration supporting policy search, SQL whitelisting, and audit logging
 - Dedicated ingestion pipeline for extracting, chunking, embedding, and indexing policy documents
 
+## Model Usage
+
+This project uses two different model roles:
+
+- Embedding model: used for ingestion and MCP semantic search
+- Generation model: used for final answer generation in the RAG service
+
+Current local development defaults:
+
+- Hugging Face embedding model: `sentence-transformers/all-MiniLM-L6-v2`
+- Ollama generation model: `llama3:8b-instruct-q4_K_M`
+
+Why this separation matters:
+
+- the embedding model converts policy text and user queries into vectors for semantic retrieval
+- the Ollama model generates the final answer from the retrieved policy context
+- the ingest embedding model and MCP search embedding model must match, or Chroma will reject the vectors because of embedding-dimension mismatch
+
+For higher-quality production retrieval, the repository also supports larger embedding models such as `BAAI/bge-m3`, but the smaller MiniLM model provides a faster and more practical local developer experience
+
 ## 5-Minute Quickstart
 
 1. Clone the repository and enter it.

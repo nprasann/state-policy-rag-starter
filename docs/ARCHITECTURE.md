@@ -110,6 +110,34 @@ There are three primary trust boundaries in this architecture:
 - Generates embeddings using `BAAI/bge-m3`
 - Upserts chunk documents and metadata into Chroma
 
+## 5A. Model Responsibilities
+
+This architecture uses two distinct model types with different responsibilities.
+
+### Embedding Model
+
+The embedding model is used in two places:
+
+- during ingestion, to generate vectors for each policy chunk
+- during MCP policy search, to generate vectors for the incoming user query
+
+Examples:
+
+- `sentence-transformers/all-MiniLM-L6-v2` for local development
+- `BAAI/bge-m3` for higher-quality retrieval when larger model downloads and latency are acceptable
+
+### Generation Model
+
+The generation model is used by `rag_service` after retrieval has already happened.
+
+Example:
+
+- `llama3:8b-instruct-q4_K_M` served through Ollama
+
+### Architectural Constraint
+
+The embedding model used for ingestion and the embedding model used for MCP semantic search must match. If they do not match, the vector dimensions stored in Chroma will differ from the dimensions generated at query time, and retrieval will fail.
+
 ## 6. Component/Class Diagram
 
 This is a simplified code-level view of the most important modules and their responsibilities.
