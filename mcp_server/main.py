@@ -56,7 +56,7 @@ def search_policies(
         collection = get_chroma_collection()
         embedding_model = get_embedding_model()
         query_embedding = embedding_model.encode([payload.query]).tolist()
-        results = collection.query(query_embeddings=query_embedding, n_results=5)
+        results = collection.query(query_embeddings=query_embedding, n_results=3)
         documents = results.get("documents", [[]])
         metadatas = results.get("metadatas", [[]])
 

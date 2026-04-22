@@ -45,22 +45,39 @@ cd state-policy-rag-starter
 cp .env.example .env
 ```
 
-3. Start the stack.
+3. For local development, set a Hugging Face read token in `.env` if model downloads are needed.
+
+```bash
+echo 'HF_TOKEN=your_huggingface_read_token' >> .env
+```
+
+4. Start the stack.
 
 ```bash
 docker-compose up --build
 ```
 
-4. In a second shell, ingest a first policy PDF.
+5. In a second shell, install ingest dependencies if needed and ingest a first policy PDF.
 
 ```bash
+python3 -m pip install -r ingest/requirements.txt
+CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python3 ingest/ingest.py \
   --file examples/sample_policy.pdf \
   --source_name "Sample Policy" \
   --section "General"
 ```
 
-5. Test the RAG endpoint.
+6. Test semantic search.
+
+```bash
+curl -X POST http://localhost:8080/search_policies \
+  -H "Content-Type: application/json" \
+  -H "user: test.user@state.gov" \
+  -d '{"query":"What does the policy require DCYF to display on the website home page?"}'
+```
+
+7. Test the RAG endpoint.
 
 ```bash
 curl -X POST http://localhost:8081/ask \
@@ -99,6 +116,14 @@ flowchart LR
 - [Security Guide](docs/SECURITY.md) for threat model and mitigations
 - [State Deployment Guide](docs/DEPLOY_STATE.md) for pilot rollout steps
 - [Automated Ingestion Guide](docs/AUTOMATED_INGESTION.md) for the planned scheduled refresh pipeline
+
+## Local Development Notes
+
+- `docker-compose` is the validated local command path for this repo
+- local ingest writes to host-exposed Chroma on port `8001`
+- the ingest embedding model and MCP search embedding model must match
+- if you change `EMBEDDING_MODEL`, delete and recreate the `policies` collection before re-ingesting
+- `HF_TOKEN` helps avoid slow or rate-limited Hugging Face downloads during first-time model setup
 
 ## Future Roadmap
 

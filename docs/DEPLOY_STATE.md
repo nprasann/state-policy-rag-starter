@@ -55,7 +55,9 @@ Minimum review points:
 - Set `AGENCY_NAME`
 - Confirm `AUTH_PROVIDER`
 - Confirm `OLLAMA_MODEL`
+- Confirm `EMBEDDING_MODEL`
 - Confirm `ESCALATE_KEYWORDS`
+- Add `HF_TOKEN` if the deployment will download Hugging Face models at startup or first query
 
 ## 5. Start The Stack
 
@@ -79,11 +81,17 @@ Install the ingest dependencies and load a first PDF into Chroma.
 
 ```bash
 python3 -m pip install -r ingest/requirements.txt
-python3 ingest/ingest.py \
+CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 python3 ingest/ingest.py \
   --file examples/sample_policy.pdf \
   --source_name "Sample Policy" \
   --section "General"
 ```
+
+Important notes:
+
+- the local ingest process connects to the host-mapped Chroma port `8001`
+- the embedding model used for ingest must match the embedding model used by `mcp_server`
+- if you switch embedding models, recreate the `policies` collection and ingest again
 
 ## 7. Test With `curl`
 
@@ -102,7 +110,7 @@ Optional direct MCP test:
 curl -X POST http://localhost:8080/search_policies \
   -H "Content-Type: application/json" \
   -H "user: test.user@state.gov" \
-  -d '{"query":"termination of rights"}'
+  -d '{"query":"What does the policy require DCYF to display on the website home page?"}'
 ```
 
 ## 8. Operational Notes
