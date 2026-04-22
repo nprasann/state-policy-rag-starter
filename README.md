@@ -91,6 +91,16 @@ flowchart LR
 - [Security Guide](docs/SECURITY.md) for threat model and mitigations
 - [State Deployment Guide](docs/DEPLOY_STATE.md) for pilot rollout steps
 
+## Open Source And Feedback
+
+This repository is meant to be open and practical.
+
+- Feel free to fork it for your own agency, internal prototype, or public-sector adaptation
+- Feedback is welcome from State IT, architects, legal teams, security reviewers, and builders working on responsible AI
+- Issues, suggestions, and improvements are all useful, especially around governance, deployment, and in-state operating models
+
 ## Intended Outcome
 
 This starter is designed for agencies that need a practical path to policy-grounded assistance without sending protected data to external hosted LLM services and without allowing open-ended SQL access.
+
+If this repository is useful, please consider forking it, sharing feedback, and giving it a star on GitHub.
