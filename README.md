@@ -115,6 +115,8 @@ curl -X POST http://localhost:8081/ask \
   -d '{"query":"What does policy say about termination of rights?"}'
 ```
 
+If you hit setup or runtime issues during quickstart, see the [Beginner Setup Guide](docs/SETUP_GUIDE.md), especially the troubleshooting section with copy-paste recovery commands.
+
 </details>
 
 <details>
@@ -257,7 +259,7 @@ flowchart LR
 - [docs/SECURITY.md](docs/SECURITY.md): threat model and technical controls
 - [docs/DEPLOY_STATE.md](docs/DEPLOY_STATE.md): step-by-step single-VM deployment guide
 - [docs/AUTOMATED_INGESTION.md](docs/AUTOMATED_INGESTION.md): ETL design for scheduled policy refresh and vector synchronization
-- [docs/README.md](docs/README.md): beginner-friendly setup and run guide for Mac, Windows, and Linux
+- [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md): beginner-friendly setup and run guide for Mac, Windows, and Linux
 
 ## Deployment Planning Docs
 

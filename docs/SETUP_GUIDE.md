@@ -1,4 +1,4 @@
-# Docs README
+# Setup Guide
 
 This guide is for an absolute beginner who wants to run `state-policy-rag-starter` on a personal computer or workstation.
 
@@ -363,6 +363,36 @@ Fix:
 - delete the `policies` collection
 - re-ingest using the new embedding model
 
+Mac / Linux:
+
+```bash
+source .venv/bin/activate
+CHROMA_PORT=8001 python - <<'PY'
+import chromadb
+client = chromadb.HttpClient(host="localhost", port=8001)
+try:
+    client.delete_collection("policies")
+    print("Deleted policies collection")
+except Exception as e:
+    print(f"Delete skipped: {e}")
+PY
+
+CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+python ingest/ingest.py \
+  --file /full/path/to/your/policy.pdf \
+  --source_name "Sample Policy" \
+  --section "General"
+```
+
+Windows PowerShell:
+
+```powershell
+$env:CHROMA_PORT='8001'
+python -c "import chromadb; client = chromadb.HttpClient(host='localhost', port=8001); client.delete_collection('policies')"
+$env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
+python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "Sample Policy" --section "General"
+```
+
 ### `Collection [policies] does not exist`
 
 Cause:
@@ -370,6 +400,25 @@ Cause:
 
 Fix:
 - run the ingest command again against `CHROMA_PORT=8001`
+
+Mac / Linux:
+
+```bash
+source .venv/bin/activate
+CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+python ingest/ingest.py \
+  --file /full/path/to/your/policy.pdf \
+  --source_name "Sample Policy" \
+  --section "General"
+```
+
+Windows PowerShell:
+
+```powershell
+$env:CHROMA_PORT='8001'
+$env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
+python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "Sample Policy" --section "General"
+```
 
 ### `Internal Server Error` from `/ask`
 
@@ -381,6 +430,24 @@ docker-compose logs --tail=100 mcp_server
 docker-compose logs --tail=100 ollama
 ```
 
+If semantic search works but `/ask` still fails:
+
+```bash
+curl -X POST http://localhost:8080/search_policies \
+  -H "Content-Type: application/json" \
+  -H "user: test.user@state.gov" \
+  -d '{"query":"What does the policy require the State Agency to display on the website home page?"}'
+```
+
+Then retry:
+
+```bash
+curl -X POST http://localhost:8081/ask \
+  -H "Content-Type: application/json" \
+  -H "user: test.user@state.gov" \
+  -d '{"query":"What does the policy require the State Agency to display on the website home page?"}'
+```
+
 ### Model download is very slow
 
 Cause:
@@ -390,6 +457,28 @@ Cause:
 Fix:
 - add `HF_TOKEN` to `.env`
 - retry after restarting the stack
+
+Mac / Linux:
+
+```bash
+echo 'HF_TOKEN=your_huggingface_read_token' >> .env
+docker-compose down
+docker-compose up --build -d
+```
+
+Windows PowerShell:
+
+```powershell
+Add-Content .env 'HF_TOKEN=your_huggingface_read_token'
+docker-compose down
+docker-compose up --build -d
+```
+
+Useful verification command:
+
+```bash
+docker-compose exec mcp_server env | grep HF_TOKEN
+```
 
 ## 13. Recommended Reading
 
