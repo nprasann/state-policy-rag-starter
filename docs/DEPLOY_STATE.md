@@ -75,13 +75,17 @@ curl http://localhost:8080/health
 curl http://localhost:8081/health
 ```
 
+Local networking note:
+
+- If `localhost` is unreliable on macOS during local validation, use `127.0.0.1` for health, readiness, search, and RAG checks.
+
 ## 6. Ingest The First Policy
 
-Install the ingest dependencies and load a first PDF into Chroma.
+Install the ingest dependencies and load a first PDF into Qdrant.
 
 ```bash
 python3 -m pip install -r ingest/requirements.txt
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 python3 ingest/ingest.py \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 python3 ingest/ingest.py \
   --file examples/sample_policy.pdf \
   --source_name "Sample Policy" \
   --section "General"
@@ -89,9 +93,10 @@ CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 python3 
 
 Important notes:
 
-- the local ingest process connects to the host-mapped Chroma port `8001`
+- the local ingest process connects to the host-mapped Qdrant port `6333`
 - the embedding model used for ingest must match the embedding model used by `mcp_server`
 - if you switch embedding models, recreate the `policies` collection and ingest again
+- call `curl http://localhost:8081/ready` once before the first real `/ask` if you want Ollama pre-warmed
 
 ## 7. Test With `curl`
 
@@ -117,4 +122,4 @@ curl -X POST http://localhost:8080/search_policies \
 
 - Keep the VM inside the state network or a state-approved enclave.
 - Restrict inbound access to trusted users, reverse proxies, or Teams integration endpoints.
-- Back up `./chroma_data` and `./ollama` according to agency retention requirements.
+- Back up `./qdrant_data` and `./ollama` according to agency retention requirements.

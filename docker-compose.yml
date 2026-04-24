@@ -1,12 +1,10 @@
 services:
-  chroma:
-    image: chromadb/chroma:latest
-    environment:
-      ANONYMIZED_TELEMETRY: "FALSE"
+  qdrant:
+    image: qdrant/qdrant:latest
     ports:
-      - "8001:8000"
+      - "6333:6333"
     volumes:
-      - ./chroma_data:/chroma/chroma
+      - ./qdrant_data:/qdrant/storage
 
   ollama:
     image: ollama/ollama:latest
@@ -22,8 +20,10 @@ services:
       - .env
     ports:
       - "8080:8000"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
     depends_on:
-      - chroma
+      - qdrant
       - ollama
 
   rag_service:
@@ -34,5 +34,8 @@ services:
     ports:
       - "8081:8000"
     depends_on:
-      - chroma
+      - qdrant
       - ollama
+
+volumes:
+  hf_cache:

@@ -61,7 +61,7 @@ Once processing is complete, embeddings are generated and synchronized into the 
 Recommended loading behavior:
 
 - generate embeddings with `sentence-transformers` or the approved local embedding model
-- upsert into the Chroma `policies` collection
+- upsert into the Qdrant `policies` collection
 - update vectors for modified documents
 - insert vectors for newly detected documents
 - optionally remove or mark archived content if the source policy was withdrawn
@@ -80,7 +80,7 @@ Recommended options:
 
 ### Storage
 
-The pipeline uses the existing Chroma vector store and its `policies` collection.
+The pipeline uses the existing Qdrant vector store and its `policies` collection.
 
 ### Validation
 
@@ -130,7 +130,7 @@ The goal is not perfect semantic validation in Phase 1. The goal is to confirm t
 
 - `ingest/ingest.py` provides the current manual ingestion baseline
 - `ingest/chunking.py` provides the initial chunking logic
-- Chroma remains the vector storage target
+- Qdrant remains the vector storage target
 - the RAG service remains the consumer of refreshed policy content
 
 This document is a design and planning artifact for the next stage of ingestion automation rather than a description of functionality already shipped.

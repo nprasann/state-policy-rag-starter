@@ -1,16 +1,18 @@
-"""CLI for ingesting policy PDFs into the Chroma policies collection."""
+"""CLI for ingesting policy PDFs into the Qdrant policies collection."""
 
 import argparse
 import hashlib
 import os
+import uuid
 
-import chromadb
 from pypdf import PdfReader
+from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
 
 from chunking import split_text
 
 EMBED_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+COLLECTION_NAME = os.getenv("VECTOR_COLLECTION", "policies")
 
 
 def extract_pdf_text(file_path: str) -> str:
@@ -21,15 +23,46 @@ def extract_pdf_text(file_path: str) -> str:
 
 
 def build_record_id(source_name: str, section: str, chunk_text: str, index: int) -> str:
-    """Generate a stable Chroma record id for each chunk."""
+    """Generate a stable Qdrant record id for each chunk."""
     digest = hashlib.sha256(
         f"{source_name}|{section}|{index}|{chunk_text}".encode("utf-8")
     ).hexdigest()
-    return f"{source_name}-{section}-{digest[:16]}"
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, digest))
+
+
+def get_qdrant_client() -> QdrantClient:
+    """Return the configured Qdrant client."""
+    return QdrantClient(
+        host=os.getenv("QDRANT_HOST", "localhost"),
+        port=int(os.getenv("QDRANT_PORT", "6333")),
+    )
+
+
+def ensure_collection(client: QdrantClient, vector_size: int) -> None:
+    """Create the collection when missing and validate vector dimensions."""
+    if not client.collection_exists(COLLECTION_NAME):
+        client.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=models.VectorParams(
+                size=vector_size,
+                distance=models.Distance.COSINE,
+            ),
+        )
+        return
+
+    collection_info = client.get_collection(COLLECTION_NAME)
+    configured_vectors = collection_info.config.params.vectors
+    configured_size = getattr(configured_vectors, "size", None)
+
+    if configured_size != vector_size:
+        raise ValueError(
+            "Collection expecting embedding with dimension "
+            f"{configured_size}, got {vector_size}"
+        )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Ingest a policy PDF into Chroma.")
+    parser = argparse.ArgumentParser(description="Ingest a policy PDF into Qdrant.")
     parser.add_argument("--file", required=True, help="Path to the source PDF file.")
     parser.add_argument(
         "--source_name",
@@ -48,30 +81,28 @@ def main() -> None:
 
     model = SentenceTransformer(EMBED_MODEL)
     embeddings = model.encode(chunks).tolist() if chunks else []
+    vector_size = len(embeddings[0]) if embeddings else model.get_sentence_embedding_dimension()
 
-    client = chromadb.HttpClient(
-        host=os.getenv("CHROMA_HOST", "localhost"),
-        port=int(os.getenv("CHROMA_PORT", "8000")),
-    )
-    collection = client.get_or_create_collection("policies")
+    client = get_qdrant_client()
+    ensure_collection(client, vector_size)
 
-    metadatas = [
-        {"source": args.source_name, "section": args.section} for _ in chunks
-    ]
-    ids = [
-        build_record_id(args.source_name, args.section, chunk, index)
-        for index, chunk in enumerate(chunks)
-    ]
-
-    if chunks:
-        collection.upsert(
-            ids=ids,
-            documents=chunks,
-            embeddings=embeddings,
-            metadatas=metadatas,
+    points = [
+        models.PointStruct(
+            id=build_record_id(args.source_name, args.section, chunk, index),
+            vector=embedding,
+            payload={
+                "source": args.source_name,
+                "section": args.section,
+                "text": chunk,
+            },
         )
+        for index, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False))
+    ]
 
-    print(f"Ingested {len(chunks)} chunks into policies for {args.source_name}.")
+    if points:
+        client.upsert(collection_name=COLLECTION_NAME, points=points, wait=True)
+
+    print(f"Ingested {len(chunks)} chunks into {COLLECTION_NAME} for {args.source_name}.")
 
 
 if __name__ == "__main__":

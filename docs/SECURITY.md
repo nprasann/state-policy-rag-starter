@@ -46,7 +46,7 @@ Mitigations:
 - PII strip: documents and related records should be sanitized before indexing.
 - Temperature `0.0`: model generation is fixed to deterministic behavior.
 - Audit logs: each request generates a structured log entry for investigation and oversight.
-- No telemetry: anonymized Chroma telemetry is disabled and hosted analytics are not assumed.
+- No telemetry: the starter assumes self-hosted Qdrant and Ollama without third-party analytics.
 
 ## Shared Responsibility
 

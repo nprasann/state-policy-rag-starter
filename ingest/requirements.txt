@@ -1,4 +1,4 @@
 pypdf
 sentence-transformers
 torch
-chromadb
+qdrant-client

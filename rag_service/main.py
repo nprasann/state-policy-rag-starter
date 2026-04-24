@@ -5,10 +5,11 @@ import re
 from typing import Any
 from urllib import error, request
 
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from llm import generate_answer
+from llm import generate_answer, warm_model
 from prompts import build_prompt
 
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://mcp_server:8000")
@@ -16,6 +17,13 @@ FALLBACK_ANSWER = "I cannot find that in approved policy. Contact supervisor."
 TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.0"))
 
 app = FastAPI(title="rag_service")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class AskRequest(BaseModel):
@@ -88,3 +96,24 @@ def ask(payload: AskRequest, user: str | None = Header(default=None)) -> dict[st
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/ready")
+def ready() -> dict[str, str]:
+    if TEMPERATURE != 0.0:
+        raise HTTPException(status_code=503, detail="LLM_TEMPERATURE must be 0.0")
+
+    readiness_request = request.Request(url=f"{MCP_SERVER_URL}/ready", method="GET")
+
+    try:
+        with request.urlopen(readiness_request, timeout=10) as response:
+            body = response.read()
+    except error.URLError as exc:
+        raise HTTPException(status_code=503, detail="MCP readiness check failed") from exc
+
+    try:
+        warm_model()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Ollama readiness check failed") from exc
+
+    return json_loads(body)

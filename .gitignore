@@ -45,6 +45,7 @@ htmlcov/
 
 # Local data directories
 chroma_data/
+qdrant_data/
 ollama/
 
 # Local environment and test documents

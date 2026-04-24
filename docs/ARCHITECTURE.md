@@ -19,11 +19,11 @@ The design goal is to give State IT, Legal, Security, and Engineering teams a sh
 flowchart LR
     User["Teams / Web User"] --> RAG["rag_service<br/>FastAPI"]
     RAG --> MCP["mcp_server<br/>FastAPI"]
-    MCP --> Chroma["Chroma<br/>policies collection"]
+    MCP --> Qdrant["Qdrant<br/>policies collection"]
     MCP --> CaseDB["CaseDB<br/>allowlisted procedures"]
     RAG --> Ollama["Ollama<br/>local model serving"]
     Ingest["PDF Ingest CLI"] --> Chunking["Chunking + Embeddings"]
-    Chunking --> Chroma
+    Chunking --> Qdrant
 ```
 
 ## 3. Deployment Diagram
@@ -39,9 +39,9 @@ flowchart TB
         subgraph VM["Dedicated Linux VM"]
             RAG["Container: rag_service<br/>:8081"]
             MCP["Container: mcp_server<br/>:8080"]
-            CH["Container: Chroma<br/>:8001 mapped to 8000"]
+            CH["Container: Qdrant<br/>:6333"]
             OLL["Container: Ollama<br/>:11434"]
-            VOL1["Volume: ./chroma_data"]
+            VOL1["Volume: ./qdrant_data"]
             VOL2["Volume: ./ollama"]
         end
 
@@ -71,7 +71,7 @@ There are three primary trust boundaries in this architecture:
    The `rag_service` and `mcp_server` containers operate as separate services so retrieval and controlled data access are not collapsed into a single runtime path.
 
 3. Sensitive systems boundary
-   Chroma, Ollama, and CaseDB hold or process sensitive content and should only be reachable from the application layer over explicitly allowed network paths.
+   Qdrant, Ollama, and CaseDB hold or process sensitive content and should only be reachable from the application layer over explicitly allowed network paths.
 
 ## 5. Component Responsibilities
 
@@ -86,12 +86,12 @@ There are three primary trust boundaries in this architecture:
 
 ### mcp_server
 
-- Provides policy search over the `policies` Chroma collection
+- Provides policy search over the `policies` Qdrant collection
 - Provides controlled SQL access via an allowlist of stored procedures
 - Resolves effective user identity
 - Emits audit events for every endpoint
 
-### Chroma
+### Qdrant
 
 - Stores policy chunks and associated metadata
 - Supports retrieval by semantic similarity
@@ -108,7 +108,7 @@ There are three primary trust boundaries in this architecture:
 - Extracts text from PDF files
 - Splits text into overlapping chunks
 - Generates embeddings using `BAAI/bge-m3`
-- Upserts chunk documents and metadata into Chroma
+- Upserts chunk documents and metadata into Qdrant
 
 ## 5A. Model Responsibilities
 
@@ -136,7 +136,7 @@ Example:
 
 ### Architectural Constraint
 
-The embedding model used for ingestion and the embedding model used for MCP semantic search must match. If they do not match, the vector dimensions stored in Chroma will differ from the dimensions generated at query time, and retrieval will fail.
+The embedding model used for ingestion and the embedding model used for MCP semantic search must match. If they do not match, the vector dimensions stored in Qdrant will differ from the dimensions generated at query time, and retrieval will fail.
 
 ## 6. Component/Class Diagram
 
@@ -163,7 +163,7 @@ classDiagram
       +search_policies(payload, user)
       +query_sql(payload, user)
       +health(user)
-      +get_chroma_collection()
+      +get_qdrant_client()
     }
 
     class Auth {
@@ -191,7 +191,7 @@ classDiagram
     MCPMain --> Auth : resolves user
     MCPMain --> Audit : logs actions
     Ingest --> Chunking : splits text
-    Ingest --> Chroma : upserts chunks
+    Ingest --> Qdrant : upserts chunks
 ```
 
 ## 7. Sequence Diagram: Question Answering Flow
@@ -203,7 +203,7 @@ sequenceDiagram
     participant U as User / Teams
     participant R as rag_service
     participant M as mcp_server
-    participant C as Chroma
+    participant C as Qdrant
     participant O as Ollama
 
     U->>R: POST /ask {query} + user header
@@ -258,7 +258,7 @@ sequenceDiagram
     participant PDF as pypdf
     participant CHK as chunking.py
     participant EMB as sentence-transformers
-    participant C as Chroma
+    participant C as Qdrant
 
     Operator->>I: python ingest.py --file --source_name --section
     I->>PDF: extract text from PDF
@@ -335,7 +335,7 @@ stateDiagram-v2
 - SQL access is modeled as allowlisted procedure calls only
 - Citation enforcement happens after model generation
 - `LLM_TEMPERATURE` is constrained to `0.0`
-- Chroma telemetry is disabled
+- Qdrant and Ollama remain self-hosted inside the agency environment
 - Audit hooks exist at the MCP service boundary
 
 ## 14. Deployment Variants
@@ -344,7 +344,7 @@ stateDiagram-v2
 
 - Single isolated VM
 - Docker Compose
-- Local Chroma and Ollama volumes
+- Local Qdrant and Ollama volumes
 - Small internal user group
 
 ### Hardened Production
@@ -352,7 +352,7 @@ stateDiagram-v2
 - Separate non-production and production environments
 - Reverse proxy or API gateway in front of `rag_service`
 - Centralized log forwarding
-- Backup and recovery for Chroma and Ollama volumes
+- Backup and recovery for Qdrant and Ollama volumes
 - Tighter egress controls and bastion-only administration
 
 ## 15. Related Documents

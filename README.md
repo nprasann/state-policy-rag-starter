@@ -5,13 +5,13 @@
 ![MCP](https://img.shields.io/badge/MCP-server-purple)
 ![RAG](https://img.shields.io/badge/AI-RAG-orange)
 ![Ollama](https://img.shields.io/badge/LLM-Ollama-black)
-![Vector%20DB](https://img.shields.io/badge/vector%20db-Chroma-3f51b5)
+![Vector%20DB](https://img.shields.io/badge/vector%20db-Qdrant-c2185b)
 
 `state-policy-rag-starter` is a starter repository for a retrieval-augmented generation workflow that helps state agencies answer policy questions using approved policy text and tightly scoped case data access.
 
 ## What It Does
 
-- Ingests policy PDFs into a Chroma vector store.
+- Ingests policy PDFs into a Qdrant vector store.
 - Exposes an MCP service for policy search and a strict SQL stored procedure allowlist.
 - Runs a RAG service that only answers from approved context and requires citations.
 - Uses Ollama for in-state model serving so policy and case data do not leave state-controlled infrastructure.
@@ -50,7 +50,7 @@ Why this separation matters:
 
 - the embedding model converts policy text and user queries into vectors for semantic retrieval
 - the Ollama model generates the final answer from the retrieved policy context
-- the ingest embedding model and MCP search embedding model must match, or Chroma will reject the vectors because of embedding-dimension mismatch
+- the ingest embedding model and MCP search embedding model must match, or the vector collection will reject the embeddings because of dimension mismatch
 
 For higher-quality production retrieval, the repository also supports larger embedding models such as `BAAI/bge-m3`, but the smaller MiniLM model provides a faster and more practical local developer experience
 
@@ -86,11 +86,17 @@ echo 'HF_TOKEN=your_huggingface_read_token' >> .env
 docker-compose up --build
 ```
 
+Optional faster bootstrap:
+
+```bash
+bash scripts/bootstrap_local.sh
+```
+
 5. In a second shell, install ingest dependencies if needed and ingest a first policy PDF.
 
 ```bash
 python3 -m pip install -r ingest/requirements.txt
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python3 ingest/ingest.py \
   --file examples/sample_policy.pdf \
   --source_name "Sample Policy" \
@@ -116,6 +122,10 @@ curl -X POST http://localhost:8081/ask \
 ```
 
 If you hit setup or runtime issues during quickstart, see the [Beginner Setup Guide](docs/SETUP_GUIDE.md), especially the troubleshooting section with copy-paste recovery commands.
+
+Local networking note:
+
+- If `localhost` behaves inconsistently on macOS, use `127.0.0.1` for local health, search, and RAG checks instead.
 
 </details>
 
@@ -155,7 +165,7 @@ docker-compose up --build
 py -3 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r ingest/requirements.txt
-$env:CHROMA_PORT='8001'
+$env:QDRANT_PORT='6333'
 $env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
 python ingest/ingest.py --file examples/sample_policy.pdf --source_name "Sample Policy" --section "General"
 ```
@@ -210,7 +220,7 @@ docker-compose up --build
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r ingest/requirements.txt
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python3 ingest/ingest.py \
   --file examples/sample_policy.pdf \
   --source_name "Sample Policy" \
@@ -243,7 +253,7 @@ curl -X POST http://localhost:8081/ask \
 flowchart LR
     A["Teams or Web Client"] --> B["rag_service<br/>FastAPI"]
     B --> C["mcp_server<br/>FastAPI"]
-    C --> D["Chroma<br/>policies collection"]
+    C --> D["Qdrant<br/>policies collection"]
     C --> E["CaseDB<br/>allowed procedures only"]
     B --> F["Ollama<br/>local model serving"]
     G["Policy PDF Ingest"] --> H["sentence-transformers<br/>BAAI/bge-m3"]
@@ -272,10 +282,11 @@ flowchart LR
 ## Local Development Notes
 
 - `docker-compose` is the validated local command path for this repo
-- local ingest writes to host-exposed Chroma on port `8001`
+- local ingest writes to host-exposed Qdrant on port `6333`
 - the ingest embedding model and MCP search embedding model must match
 - if you change `EMBEDDING_MODEL`, delete and recreate the `policies` collection before re-ingesting
 - `HF_TOKEN` helps avoid slow or rate-limited Hugging Face downloads during first-time model setup
+- `bash scripts/bootstrap_local.sh` is the fastest way to warm the services, ingest a sample policy, and wait for `/ready`
 
 ## Future Roadmap
 

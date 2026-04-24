@@ -10,7 +10,7 @@ The primary design goal is isolation. This workload should run in a dedicated ne
 - Place all components in an isolated network zone or enclave.
 - Do not co-locate the service with domain controllers, database clusters, file servers, or line-of-business application servers.
 - Restrict inbound and outbound traffic to only the ports and endpoints required for operation.
-- Treat the Ollama model host, Chroma data store, and API services as sensitive systems because they may contain policy text, prompts, vectorized content, and audit logs.
+- Treat the Ollama model host, Qdrant data store, and API services as sensitive systems because they may contain policy text, prompts, vectorized content, and audit logs.
 
 ## 2. Minimum Hardware Profiles
 
@@ -78,7 +78,7 @@ Azure storage guidance:
 - Use Premium SSD managed disks
 - Separate OS disk from data disk where possible
 - Mount data paths for:
-  - `./chroma_data`
+  - `./qdrant_data`
   - `./ollama`
   - audit log export location
 
@@ -88,7 +88,7 @@ Azure network guidance:
 - Use NSGs to allow only approved inbound traffic
 - Prefer private IP access only
 - Terminate user access through VPN, ExpressRoute, Bastion, or an internal reverse proxy
-- Deny direct public access to Ollama, Chroma, and internal API ports
+- Deny direct public access to Ollama, Qdrant, and internal API ports
 
 Recommended Azure pattern:
 
@@ -133,7 +133,7 @@ Required controls:
 - Allow only these trusted flows:
   - client or reverse proxy to `rag_service`
   - `rag_service` to `mcp_server`
-  - `mcp_server` to Chroma
+  - `mcp_server` to Qdrant
   - `rag_service` to Ollama
   - `mcp_server` to approved case database endpoint, if used
 - Deny all other east-west traffic by default
@@ -168,7 +168,7 @@ Minimum storage areas:
 
 - OS and container runtime
 - `ollama` model storage
-- `chroma_data` vector store
+- `qdrant_data` vector store
 - audit log retention
 - backups and snapshots
 

@@ -1,1 +1,4 @@
-# Placeholder for RAG service Python dependencies.
+fastapi
+uvicorn
+python-dotenv
+ollama

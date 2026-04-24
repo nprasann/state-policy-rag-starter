@@ -81,5 +81,5 @@ Agencies may add additional keywords based on program risk and statute.
 ## No Telemetry
 
 - External product telemetry must remain disabled where supported.
-- Chroma anonymized telemetry is disabled in `docker-compose.yml`.
+- The vector store and model services are self-hosted in Docker Compose without third-party telemetry enabled by default.
 - No third-party analytics, prompt logging SaaS, or hosted observability tools should receive agency content unless separately approved.

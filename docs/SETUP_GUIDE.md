@@ -201,6 +201,12 @@ From the project root:
 docker-compose up --build -d
 ```
 
+Faster, more reliable local bootstrap:
+
+```bash
+bash scripts/bootstrap_local.sh
+```
+
 Check status:
 
 ```bash
@@ -220,6 +226,10 @@ On Windows PowerShell, `curl` may map differently. If needed, use:
 curl.exe http://localhost:8080/health
 curl.exe http://localhost:8081/health
 ```
+
+Local networking note:
+
+- If `localhost` behaves inconsistently on macOS, use `127.0.0.1` instead for local health, readiness, search, and RAG checks.
 
 ## 7. Prepare Python for Ingestion
 
@@ -250,7 +260,7 @@ Use a real PDF file, not a placeholder.
 ### Mac / Linux
 
 ```bash
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python ingest/ingest.py \
   --file /full/path/to/your/policy.pdf \
   --source_name "Sample Policy" \
@@ -260,7 +270,7 @@ python ingest/ingest.py \
 ### Windows PowerShell
 
 ```powershell
-$env:CHROMA_PORT='8001'
+$env:QDRANT_PORT='6333'
 $env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
 python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "Sample Policy" --section "General"
 ```
@@ -337,7 +347,7 @@ See service-specific logs:
 docker-compose logs -f mcp_server
 docker-compose logs -f rag_service
 docker-compose logs -f ollama
-docker-compose logs -f chroma
+docker-compose logs -f qdrant
 ```
 
 Update repo if you cloned with Git:
@@ -367,17 +377,14 @@ Mac / Linux:
 
 ```bash
 source .venv/bin/activate
-CHROMA_PORT=8001 python - <<'PY'
-import chromadb
-client = chromadb.HttpClient(host="localhost", port=8001)
-try:
-    client.delete_collection("policies")
-    print("Deleted policies collection")
-except Exception as e:
-    print(f"Delete skipped: {e}")
+QDRANT_PORT=6333 python - <<'PY'
+from qdrant_client import QdrantClient
+client = QdrantClient(host="localhost", port=6333)
+client.delete_collection("policies")
+print("Deleted policies collection")
 PY
 
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python ingest/ingest.py \
   --file /full/path/to/your/policy.pdf \
   --source_name "Sample Policy" \
@@ -387,8 +394,8 @@ python ingest/ingest.py \
 Windows PowerShell:
 
 ```powershell
-$env:CHROMA_PORT='8001'
-python -c "import chromadb; client = chromadb.HttpClient(host='localhost', port=8001); client.delete_collection('policies')"
+$env:QDRANT_PORT='6333'
+python -c "from qdrant_client import QdrantClient; client = QdrantClient(host='localhost', port=6333); client.delete_collection('policies')"
 $env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
 python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "Sample Policy" --section "General"
 ```
@@ -396,16 +403,16 @@ python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "
 ### `Collection [policies] does not exist`
 
 Cause:
-- the data has not been ingested yet into the running Chroma instance
+- the data has not been ingested yet into the running Qdrant instance
 
 Fix:
-- run the ingest command again against `CHROMA_PORT=8001`
+- run the ingest command again against `QDRANT_PORT=6333`
 
 Mac / Linux:
 
 ```bash
 source .venv/bin/activate
-CHROMA_PORT=8001 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+QDRANT_PORT=6333 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 python ingest/ingest.py \
   --file /full/path/to/your/policy.pdf \
   --source_name "Sample Policy" \
@@ -415,7 +422,7 @@ python ingest/ingest.py \
 Windows PowerShell:
 
 ```powershell
-$env:CHROMA_PORT='8001'
+$env:QDRANT_PORT='6333'
 $env:EMBEDDING_MODEL='sentence-transformers/all-MiniLM-L6-v2'
 python ingest/ingest.py --file "C:\full\path\to\your\policy.pdf" --source_name "Sample Policy" --section "General"
 ```
@@ -457,6 +464,15 @@ Cause:
 Fix:
 - add `HF_TOKEN` to `.env`
 - retry after restarting the stack
+
+### `/ask` is very slow the first time
+
+Cause:
+- Ollama is loading the local generation model into memory for the first real request
+
+Fix:
+- use `bash scripts/bootstrap_local.sh` so `/ready` pre-warms the Ollama model
+- or call `curl http://localhost:8081/ready` before the first `/ask`
 
 Mac / Linux:
 
