@@ -19,7 +19,7 @@ macOS is the directly tested path for this repository. Windows and Linux instruc
 To run this project locally, you need:
 
 - Git
-- Docker Desktop or Docker Engine with `docker-compose`
+- Docker Desktop or Docker Engine with `docker-compose`, or Podman with `podman compose`
 - Python `3.10+` or `3.11`
 - internet access for first-time model downloads
 - a Hugging Face read token if you want smoother model downloads
@@ -43,7 +43,7 @@ There are two ways to get the code:
 Once the code is on your machine, the basic flow is:
 
 1. create `.env`
-2. start Docker services
+2. start container services
 3. install Python ingest dependencies
 4. ingest a real policy PDF
 5. test semantic search
@@ -89,6 +89,16 @@ git --version
 python3 --version
 docker --version
 docker-compose --version
+```
+
+Optional Podman path:
+
+```bash
+brew install podman
+podman machine init
+podman machine start
+podman --version
+podman-compose version
 ```
 
 ### Windows
@@ -207,6 +217,24 @@ Faster, more reliable local bootstrap:
 bash scripts/bootstrap_local.sh
 ```
 
+Alternative Podman path:
+
+```bash
+podman-compose up --build -d
+```
+
+Or:
+
+```bash
+bash scripts/bootstrap_local_podman.sh
+```
+
+Important Podman notes on macOS:
+
+- use `podman-compose` directly instead of relying on `podman compose` if Podman tries to delegate to Docker Compose
+- prefer a normal local path such as `/Users/Shared/...` or another standard home-directory path
+- avoid validating Podman bind mounts from unusual `/Volumes/...` paths if they behave inconsistently
+
 Check status:
 
 ```bash
@@ -230,6 +258,12 @@ curl.exe http://localhost:8081/health
 Local networking note:
 
 - If `localhost` behaves inconsistently on macOS, use `127.0.0.1` instead for local health, readiness, search, and RAG checks.
+
+Runtime switching note:
+
+- if you have already started the stack with Podman, run `podman-compose down` before switching back to Docker
+- if you have already started the stack with Docker, run `docker-compose down` before switching to Podman
+- this prevents port conflicts on `8080`, `8081`, `6333`, and `11434`
 
 ## 7. Prepare Python for Ingestion
 

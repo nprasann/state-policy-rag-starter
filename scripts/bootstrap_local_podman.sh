@@ -38,8 +38,14 @@ wait_for_url() {
   done
 }
 
-echo "Starting local services..."
-docker-compose up --build -d
+if command -v podman-machine >/dev/null 2>&1; then
+  podman machine start >/dev/null 2>&1 || true
+fi
+
+mkdir -p qdrant_data ollama
+
+echo "Starting local services with Podman..."
+podman-compose up --build -d
 
 wait_for_url "http://127.0.0.1:8080/health" "MCP health"
 wait_for_url "http://127.0.0.1:8081/health" "RAG health"
@@ -59,6 +65,6 @@ fi
 wait_for_url "http://127.0.0.1:8080/ready" "MCP readiness"
 wait_for_url "http://127.0.0.1:8081/ready" "RAG readiness and Ollama warmup" 120
 
-echo "State Policy RAG starter is ready."
+echo "State Policy RAG starter is ready with Podman."
 echo "MCP: http://127.0.0.1:8080/ready"
 echo "RAG: http://127.0.0.1:8081/ready"

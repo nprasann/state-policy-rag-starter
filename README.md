@@ -54,6 +54,23 @@ Why this separation matters:
 
 For higher-quality production retrieval, the repository also supports larger embedding models such as `BAAI/bge-m3`, but the smaller MiniLM model provides a faster and more practical local developer experience
 
+## Container Runtime Support
+
+This starter supports:
+
+- Docker as the primary validated local path
+- Podman as an alternative local runtime path
+
+Quick links:
+
+- [Setup Guide](docs/SETUP_GUIDE.md)
+- [Podman Guide](docs/PODMAN.md)
+
+Runtime switching note:
+
+- Do not run Docker and Podman copies of this stack at the same time on one machine because they compete for the same ports
+- If you switch runtimes, bring the current stack down first, then start the other one
+
 ## 5-Minute Quickstart
 
 macOS is the directly tested local path for this repository. Windows and Linux quickstart instructions below are AI-assisted guidance and should be validated in your environment before production use.
@@ -90,6 +107,19 @@ Optional faster bootstrap:
 
 ```bash
 bash scripts/bootstrap_local.sh
+```
+
+Optional Podman bootstrap:
+
+```bash
+bash scripts/bootstrap_local_podman.sh
+```
+
+If you switch back to Docker after using Podman:
+
+```bash
+podman-compose down
+docker-compose up --build
 ```
 
 5. In a second shell, install ingest dependencies if needed and ingest a first policy PDF.
@@ -270,6 +300,7 @@ flowchart LR
 - [docs/DEPLOY_STATE.md](docs/DEPLOY_STATE.md): step-by-step single-VM deployment guide
 - [docs/AUTOMATED_INGESTION.md](docs/AUTOMATED_INGESTION.md): ETL design for scheduled policy refresh and vector synchronization
 - [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md): beginner-friendly setup and run guide for Mac, Windows, and Linux
+- [docs/PODMAN.md](docs/PODMAN.md): Podman runtime setup and validation guidance
 
 ## Deployment Planning Docs
 
