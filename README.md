@@ -27,6 +27,11 @@
 
 - Medium: [The Problem With Most AI Demos and Why I Built a Public-Sector RAG Starter Instead](https://medium.com/@nprasann/the-problem-with-most-ai-demos-and-why-i-built-a-public-sector-rag-starter-instead-95be0db949af)
 
+## Related Repos
+
+- Governance companion: [ai-rmf-starter](https://github.com/nprasann/ai-rmf-starter)
+- UI companion: [state-policy-rag-ui](https://github.com/nprasann/state-policy-rag-ui)
+
 ## Implemented Features
 
 - Core project scaffolding and Docker-based service configuration for local and pilot deployments
